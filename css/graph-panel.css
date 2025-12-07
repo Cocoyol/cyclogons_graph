@@ -19,7 +19,8 @@
     border-radius: var(--radius-lg);
     overflow: hidden;
     animation: scaleIn var(--transition-slow) ease-out;
-    min-height: 200px;
+    min-height: 0;
+    box-sizing: border-box;
 }
 
 /* ==========================================

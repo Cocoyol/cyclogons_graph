@@ -409,6 +409,10 @@ class CyclogonApp {
                 this.elements.sidesSelector.style.display = 
                     this.state.shapeType === 'polygon' ? 'flex' : 'none';
                 
+                // Resetear estado del InputController para evitar congelamiento
+                this.inputController.reset();
+                this.state.isDragging = false;
+                
                 // Actualizar vista usando la nueva arquitectura
                 if (this.state.shapeType === 'circle') {
                     this.configPanelView.setCircle(CONFIG.SHAPES.DEFAULT_RADIUS);
@@ -427,6 +431,10 @@ class CyclogonApp {
         // Selector de lados
         this.elements.sidesMinus.addEventListener('click', () => {
             if (this.state.polygonSides > CONFIG.SHAPES.MIN_POLYGON_SIDES) {
+                // Resetear estado del InputController para evitar congelamiento
+                this.inputController.reset();
+                this.state.isDragging = false;
+                
                 this.state.polygonSides--;
                 this.elements.sidesInput.value = this.state.polygonSides;
                 this.configPanelView.updatePolygonSides(this.state.polygonSides);
@@ -437,6 +445,10 @@ class CyclogonApp {
         
         this.elements.sidesPlus.addEventListener('click', () => {
             if (this.state.polygonSides < CONFIG.SHAPES.MAX_POLYGON_SIDES) {
+                // Resetear estado del InputController para evitar congelamiento
+                this.inputController.reset();
+                this.state.isDragging = false;
+                
                 this.state.polygonSides++;
                 this.elements.sidesInput.value = this.state.polygonSides;
                 this.configPanelView.updatePolygonSides(this.state.polygonSides);
@@ -504,6 +516,10 @@ class CyclogonApp {
         this.state.shapeType = CONFIG.SHAPES.DEFAULT_TYPE;
         this.state.polygonSides = CONFIG.SHAPES.DEFAULT_POLYGON_SIDES;
         this.state.cycles = CONFIG.CYCLOGON.DEFAULT_CYCLES;
+        
+        // Resetear estado del InputController para evitar congelamiento
+        this.inputController.reset();
+        this.state.isDragging = false;
         
         // Actualizar UI
         document.querySelector('input[value="circle"]').checked = true;

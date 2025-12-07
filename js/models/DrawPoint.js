@@ -296,6 +296,22 @@ export class DrawPoint {
     }
 
     /**
+     * Establece la posición del punto para operación de snap.
+     * Esta versión NO limpia el estado de snap y mueve inmediatamente,
+     * ya que será seguida por una llamada a snapToShape.
+     * @param {number} x - Nueva coordenada X (posición del mouse)
+     * @param {number} y - Nueva coordenada Y (posición del mouse)
+     */
+    setPositionForSnap(x, y) {
+        // Guardar la posición del mouse como referencia para calcular el snap,
+        // pero NO actualizar la posición real del punto todavía.
+        // La posición real se establecerá en snapToShape.
+        this._targetPosition.x = x;
+        this._targetPosition.y = y;
+        // No llamar a _clearSnap() - el estado de snap se actualizará en snapToShape
+    }
+
+    /**
      * Mueve el punto por un delta
      * @param {number} dx - Desplazamiento en X
      * @param {number} dy - Desplazamiento en Y
@@ -372,14 +388,21 @@ export class DrawPoint {
      * @returns {Object} Información del snap { edgeIndex, t, point }
      */
     snapToNearestPolygonEdge(polygon) {
-        const result = polygon.findClosestEdge(this._position);
+        // Usar la posición objetivo (donde está el mouse) para calcular el snap
+        const result = polygon.findClosestEdge(this._targetPosition);
         
+        // Establecer posición inmediatamente (sin animación) para evitar parpadeo
         this._position.x = result.closestPoint.x;
         this._position.y = result.closestPoint.y;
+        this._targetPosition.x = result.closestPoint.x;
+        this._targetPosition.y = result.closestPoint.y;
+        
         this._isSnappedToEdge = true;
         this._snappedEdgeIndex = result.edgeIndex;
         this._edgeParameter = result.t;
         this._snappedAngle = null;
+        
+        this._updateVisualState();
 
         return {
             edgeIndex: result.edgeIndex,
@@ -394,14 +417,21 @@ export class DrawPoint {
      * @returns {Object} Información del snap { angle, point }
      */
     snapToCircle(circle) {
-        const projected = circle.projectToBorder(this._position);
+        // Usar la posición objetivo (donde está el mouse) para calcular el snap
+        const projected = circle.projectToBorder(this._targetPosition);
         
+        // Establecer posición inmediatamente (sin animación) para evitar parpadeo
         this._position.x = projected.x;
         this._position.y = projected.y;
+        this._targetPosition.x = projected.x;
+        this._targetPosition.y = projected.y;
+        
         this._isSnappedToEdge = true;
         this._snappedEdgeIndex = null;
         this._edgeParameter = 0;
         this._snappedAngle = projected.angle;
+        
+        this._updateVisualState();
 
         return {
             angle: projected.angle,
@@ -488,6 +518,8 @@ export class DrawPoint {
         const topPoint = circle.getTopPoint();
         this._position.x = topPoint.x;
         this._position.y = topPoint.y;
+        this._targetPosition.x = topPoint.x;
+        this._targetPosition.y = topPoint.y;
         this._isSnappedToEdge = true;
         this._snappedAngle = Math.PI / 2;
         this._snappedEdgeIndex = null;
@@ -502,6 +534,8 @@ export class DrawPoint {
         const topVertex = polygon.getTopVertex();
         this._position.x = topVertex.x;
         this._position.y = topVertex.y;
+        this._targetPosition.x = topVertex.x;
+        this._targetPosition.y = topVertex.y;
         this._isSnappedToEdge = true;
         this._snappedEdgeIndex = topVertex.index;
         this._edgeParameter = 0;
@@ -606,6 +640,16 @@ export class DrawPoint {
             return 0x00ff88; // Verde para indicar snap
         }
         return 0xffffff;
+    }
+
+    /**
+     * Verifica si el punto se está moviendo (animando hacia target)
+     * @returns {boolean}
+     */
+    isMoving() {
+        const dx = this._position.x - this._targetPosition.x;
+        const dy = this._position.y - this._targetPosition.y;
+        return (dx * dx + dy * dy) > 0.000001;
     }
 
     /**

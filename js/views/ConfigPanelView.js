@@ -542,6 +542,11 @@ export class ConfigPanelView {
         this._shapeModel = new Circle(radius);
         this._createShapeVisual();
         
+        // Resetear estados del punto de dibujo antes de reposicionar
+        this._drawPointModel.isDragging = false;
+        this._drawPointModel.isHovered = false;
+        this._isSnapModeActive = false;
+        
         // Reposicionar punto de dibujo
         this._drawPointModel.resetToCircleTop(this._shapeModel);
         this.updateDrawPointPosition();
@@ -553,8 +558,15 @@ export class ConfigPanelView {
      * @param {number} radius - Radio circunscrito
      */
     setPolygon(sides, radius = CONFIG.SHAPES.DEFAULT_RADIUS) {
-        this._shapeModel = new Polygon(sides, radius);
+        // Calcular rotación para que el polígono descanse sobre un lado
+        const rotationOffset = -Math.PI / 2 + Math.PI / sides;
+        this._shapeModel = new Polygon(sides, radius, rotationOffset);
         this._createShapeVisual();
+        
+        // Resetear estados del punto de dibujo antes de reposicionar
+        this._drawPointModel.isDragging = false;
+        this._drawPointModel.isHovered = false;
+        this._isSnapModeActive = false;
         
         // Reposicionar punto de dibujo
         this._drawPointModel.resetToPolygonTop(this._shapeModel);
@@ -571,8 +583,17 @@ export class ConfigPanelView {
             return;
         }
         
-        this._shapeModel.sides = sides;
+        // Recalcular polígono con nueva rotación para mantenerlo sobre un lado
+        const radius = this._shapeModel.radius;
+        const rotationOffset = -Math.PI / 2 + Math.PI / sides;
+        this._shapeModel = new Polygon(sides, radius, rotationOffset);
+        
         this._createShapeVisual();
+        
+        // Resetear estados del punto de dibujo antes de reposicionar
+        this._drawPointModel.isDragging = false;
+        this._drawPointModel.isHovered = false;
+        this._isSnapModeActive = false;
         
         // Reposicionar punto de dibujo
         this._drawPointModel.resetToPolygonTop(this._shapeModel);
@@ -723,7 +744,9 @@ export class ConfigPanelView {
         if (!this._drawPointModel) return;
 
         if (snap) {
-            this._drawPointModel.setPosition(x, y);
+            // En modo snap: primero establecer la posición objetivo (sin animación),
+            // luego proyectar al borde de la forma inmediatamente
+            this._drawPointModel.setPositionForSnap(x, y);
             this._drawPointModel.snapToShape(this._shapeModel);
         } else {
             this._drawPointModel.setPosition(x, y);
@@ -844,7 +867,8 @@ export class ConfigPanelView {
                 // Solo actualizar visualmente si hay cambios significativos
                 if (this._drawPointModel.isDragging || 
                     this._drawPointModel.isHovered ||
-                    this._drawPointModel.trailPoints.length > 0) {
+                    this._drawPointModel.trailPoints.length > 0 ||
+                    this._drawPointModel.isMoving()) {
                     this.updateDrawPointPosition();
                 }
             }

@@ -150,16 +150,27 @@ export class CyclogonCalculator {
         const apothem = polygon.getApothem();
         const exteriorAngle = polygon.getExteriorAngle(); // 2π/n
         
+        // 1. Ajustar orientación inicial
+        // Encontrar el lado que debería estar en el suelo (el que tiene la normal más hacia abajo)
+        const bottomSideIndex = this._findBottomSideIndex(polygon);
+        
+        // Calcular rotación necesaria para que ese lado quede horizontal en el suelo
+        const currentNormalAngle = this._getEdgeNormalAngle(polygon, bottomSideIndex);
+        const targetNormalAngle = -Math.PI / 2; // Normal apuntando hacia abajo
+        const adjustmentRotation = targetNormalAngle - currentNormalAngle;
+        
+        // Ajustar el punto de dibujo a la nueva orientación
+        const adjustedDrawPoint = this._rotatePoint(drawPoint, {x:0, y:0}, adjustmentRotation);
+        
         // Total de lados a recorrer
         const totalSides = Math.ceil(cycles * n);
         
         // Ángulo de rotación inicial del polígono (para que descanse sobre un lado)
-        // El polígono comienza con el vértice superior (por rotationOffset en Polygon)
-        // Necesitamos calcular la rotación para que descanse sobre un lado
         let polygonRotation = 0;
         
         // Posición X acumulada del pivote
-        let pivotX = 0;
+        // Empezamos en sideLength para que el primer lado descanse entre 0 y sideLength
+        let pivotX = sideLength;
         
         // Para cada lado que el polígono rueda sobre
         for (let sideIndex = 0; sideIndex < totalSides; sideIndex++) {
@@ -184,8 +195,11 @@ export class CyclogonCalculator {
                 // Fracción del ángulo de rotación para este punto
                 const t = p / this.options.pointsPerSide;
                 
-                // Ángulo de rotación del polígono para este punto del arco
-                const currentRotation = polygonRotation + t * exteriorAngle;
+                // Ángulo de rotación LOCAL para este paso (0 a exteriorAngle)
+                const localRotation = t * exteriorAngle;
+
+                // Ángulo de rotación TOTAL acumulado
+                const currentTotalRotation = polygonRotation + localRotation;
                 
                 // Calcular la posición del punto de dibujo
                 // El punto de dibujo está a una posición (drawPoint.x, drawPoint.y) del centro
@@ -196,14 +210,16 @@ export class CyclogonCalculator {
                 const centerDistance = this._getDistancePivotToCenter(polygon, sideIndex);
                 const centerAngleFromPivot = this._getCenterAngleFromPivot(polygon, sideIndex);
                 
-                // El centro rota alrededor del pivote
-                const rotatedCenterAngle = centerAngleFromPivot - currentRotation;
+                // El centro rota alrededor del pivote (usando rotación LOCAL)
+                // Reseteamos la referencia para cada nuevo pivote
+                const rotatedCenterAngle = centerAngleFromPivot - localRotation;
                 const centerX = pivot.x + centerDistance * Math.cos(rotatedCenterAngle);
                 const centerY = pivot.y + centerDistance * Math.sin(rotatedCenterAngle);
                 
-                // El punto de dibujo rota junto con el polígono
-                const rotatedDrawPointAngle = Math.atan2(drawPoint.y, drawPoint.x) - currentRotation;
-                const drawPointDist = Math.sqrt(drawPoint.x ** 2 + drawPoint.y ** 2);
+                // El punto de dibujo rota junto con el polígono (usando rotación TOTAL)
+                // Usamos el punto ajustado
+                const rotatedDrawPointAngle = Math.atan2(adjustedDrawPoint.y, adjustedDrawPoint.x) - currentTotalRotation;
+                const drawPointDist = Math.sqrt(adjustedDrawPoint.x ** 2 + adjustedDrawPoint.y ** 2);
                 
                 const x = centerX + drawPointDist * Math.cos(rotatedDrawPointAngle);
                 const y = centerY + drawPointDist * Math.sin(rotatedDrawPointAngle);
@@ -212,7 +228,7 @@ export class CyclogonCalculator {
                     x,
                     y,
                     sideIndex,
-                    rotation: currentRotation,
+                    rotation: currentTotalRotation,
                     pivot: { ...pivot }
                 });
             }
@@ -232,6 +248,38 @@ export class CyclogonCalculator {
         });
         
         return cyclogon;
+    }
+
+    /**
+     * Encuentra el índice del lado que debería estar en el suelo (normal más cercana a -90°)
+     * @private
+     */
+    _findBottomSideIndex(polygon) {
+        let bestIndex = 0;
+        let maxDot = -Infinity; // Dot product con vector (0, -1)
+        
+        for (let i = 0; i < polygon.sides; i++) {
+            const edge = polygon.getEdge(i);
+            const normal = edge.getNormal();
+            // Dot product con (0, -1) es -normal.y
+            const dot = -normal.y;
+            
+            if (dot > maxDot) {
+                maxDot = dot;
+                bestIndex = i;
+            }
+        }
+        return bestIndex;
+    }
+
+    /**
+     * Obtiene el ángulo de la normal de una arista
+     * @private
+     */
+    _getEdgeNormalAngle(polygon, edgeIndex) {
+        const edge = polygon.getEdge(edgeIndex);
+        const normal = edge.getNormal();
+        return Math.atan2(normal.y, normal.x);
     }
 
     // ==========================================

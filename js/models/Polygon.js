@@ -110,8 +110,8 @@ export class Edge {
         
         // Normal perpendicular (hacia afuera del polígono)
         return {
-            x: -dy / length,
-            y: dx / length
+            x: dy / length,
+            y: -dx / length
         };
     }
 }
