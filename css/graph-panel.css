@@ -1,0 +1,422 @@
+/**
+ * ============================================
+ * GRAPH-PANEL.CSS - Estilos del Panel Gráfico
+ * Generador de Ciclógonos 2D
+ * ============================================
+ */
+
+/* ==========================================
+   PANEL GRÁFICO
+   ========================================== */
+.graph-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--gradient-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    animation: scaleIn var(--transition-slow) ease-out;
+    min-height: 200px;
+}
+
+/* ==========================================
+   HEADER DEL GRÁFICO
+   ========================================== */
+.graph-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.graph-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+.graph-title svg {
+    width: 18px;
+    height: 18px;
+    color: var(--color-success);
+}
+
+.graph-title span {
+    background: linear-gradient(135deg, var(--color-success) 0%, var(--color-accent-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ==========================================
+   CONTROLES DEL GRÁFICO
+   ========================================== */
+.graph-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.graph-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.graph-btn:hover {
+    background: rgba(76, 201, 240, 0.1);
+    border-color: var(--color-accent-primary);
+    color: var(--color-accent-primary);
+    transform: translateY(-1px);
+}
+
+.graph-btn:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.graph-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ==========================================
+   CONTENEDOR DEL CANVAS
+   ========================================== */
+.graph-container {
+    flex: 1;
+    position: relative;
+    background: var(--color-bg-primary);
+    overflow: hidden;
+}
+
+.graph-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
+/* ==========================================
+   DECORACIÓN DEL GRÁFICO
+   ========================================== */
+.graph-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(180deg, rgba(15, 15, 15, 0.8) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.graph-container::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(0deg, rgba(15, 15, 15, 0.8) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ==========================================
+   INDICADORES DE EJES
+   ========================================== */
+.axis-indicator {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--color-text-muted);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.axis-x {
+    bottom: 8px;
+    right: 8px;
+}
+
+.axis-y {
+    top: 8px;
+    left: 8px;
+}
+
+/* ==========================================
+   TOOLTIP DE COORDENADAS
+   ========================================== */
+.coord-tooltip {
+    position: absolute;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-primary);
+    pointer-events: none;
+    z-index: var(--z-tooltip);
+    opacity: 0;
+    transform: translate(-50%, -100%) translateY(-8px);
+    transition: opacity var(--transition-fast);
+}
+
+.coord-tooltip.visible {
+    opacity: 1;
+}
+
+.coord-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px 5px 0;
+    border-style: solid;
+    border-color: rgba(0, 0, 0, 0.85) transparent transparent;
+}
+
+/* ==========================================
+   LEYENDA
+   ========================================== */
+.graph-legend {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    z-index: 2;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+}
+
+.legend-color {
+    width: 16px;
+    height: 3px;
+    border-radius: 2px;
+}
+
+.legend-color.cyclogon {
+    background: var(--color-success);
+    box-shadow: 0 0 6px var(--color-success);
+}
+
+.legend-color.floor {
+    background: var(--color-text-primary);
+}
+
+/* ==========================================
+   ESTADO VACÍO
+   ========================================== */
+.graph-empty {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--color-text-muted);
+    text-align: center;
+    pointer-events: none;
+}
+
+.graph-empty svg {
+    width: 48px;
+    height: 48px;
+    opacity: 0.3;
+}
+
+.graph-empty-text {
+    font-size: 0.85rem;
+}
+
+/* ==========================================
+   ANIMACIÓN DE LÍNEA
+   ========================================== */
+@keyframes drawLine {
+    from {
+        stroke-dashoffset: 1000;
+    }
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+.cyclogon-line-animated {
+    stroke-dasharray: 1000;
+    animation: drawLine 2s ease-out forwards;
+}
+
+/* ==========================================
+   GRID OVERLAY (Opcional)
+   ========================================== */
+.grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    opacity: 0.1;
+    background-image: 
+        linear-gradient(var(--color-text-muted) 1px, transparent 1px),
+        linear-gradient(90deg, var(--color-text-muted) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+
+/* ==========================================
+   LOADER
+   ========================================== */
+.graph-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.loader-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--color-bg-tertiary);
+    border-top-color: var(--color-accent-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ==========================================
+   MINI-MAPA (Opcional para futuras versiones)
+   ========================================== */
+.graph-minimap {
+    position: absolute;
+    bottom: 16px;
+    right: 16px;
+    width: 120px;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    z-index: 2;
+    opacity: 0.8;
+    transition: opacity var(--transition-normal);
+}
+
+.graph-minimap:hover {
+    opacity: 1;
+}
+
+.minimap-viewport {
+    position: absolute;
+    border: 1px solid var(--color-accent-primary);
+    background: rgba(76, 201, 240, 0.1);
+}
+
+/* ==========================================
+   RESPONSIVE
+   ========================================== */
+@media (max-width: 768px) {
+    .graph-header {
+        padding: 10px 12px;
+    }
+    
+    .graph-title {
+        font-size: 0.8rem;
+    }
+    
+    .graph-btn {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .graph-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .graph-legend {
+        top: 8px;
+        right: 8px;
+        padding: 8px 10px;
+    }
+    
+    .graph-minimap {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .graph-controls {
+        gap: 4px;
+    }
+    
+    .graph-legend {
+        display: none;
+    }
+}
+
+/* ==========================================
+   HIGH CONTRAST MODE
+   ========================================== */
+@media (prefers-contrast: high) {
+    .graph-panel {
+        border-width: 2px;
+    }
+    
+    .graph-container::before,
+    .graph-container::after {
+        display: none;
+    }
+}
+
+/* ==========================================
+   REDUCED MOTION
+   ========================================== */
+@media (prefers-reduced-motion: reduce) {
+    .cyclogon-line-animated {
+        animation: none;
+    }
+    
+    .loader-spinner {
+        animation: none;
+        border-color: var(--color-accent-primary);
+    }
+}

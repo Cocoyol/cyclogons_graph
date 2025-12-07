@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Generador interactivo de ciclógonos 2D - Visualiza curvas matemáticas generadas por polígonos rodando">
+    <meta name="author" content="Cyclogon Generator Team">
+    
+    <title>Generador de Ciclógonos 2D</title>
+    
+    <!-- Google Fonts - Fuentes Modernas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/config-panel.css">
+    <link rel="stylesheet" href="css/graph-panel.css">
+</head>
+<body>
+    <!-- ========================================== -->
+    <!-- HEADER -->
+    <!-- ========================================== -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 40 40" class="logo-svg">
+                        <circle cx="20" cy="20" r="18" fill="none" stroke="url(#logoGradient)" stroke-width="2"/>
+                        <path d="M20 8 L32 26 L8 26 Z" fill="none" stroke="url(#logoGradient)" stroke-width="2"/>
+                        <circle cx="20" cy="8" r="3" fill="#f72585"/>
+                        <defs>
+                            <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#4cc9f0"/>
+                                <stop offset="100%" stop-color="#7209b7"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="title-section">
+                    <h1 class="app-title">Generador de Ciclógonos</h1>
+                    <p class="app-subtitle">Visualización interactiva de curvas matemáticas</p>
+                </div>
+            </div>
+            <div class="header-badge">
+                <span class="badge-text">2D</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- MAIN CONTAINER -->
+    <!-- ========================================== -->
+    <main class="main-container">
+        
+        <!-- ========================================== -->
+        <!-- PANEL DE CONFIGURACIÓN (Superior) -->
+        <!-- ========================================== -->
+        <section class="config-panel" id="configPanel">
+            <div class="config-content">
+                
+                <!-- Selector de Forma -->
+                <div class="config-group shape-selector">
+                    <h3 class="group-title">
+                        <i data-lucide="shapes"></i>
+                        <span>Forma Base</span>
+                    </h3>
+                    <div class="shape-options">
+                        <label class="shape-option" data-shape="circle">
+                            <input type="radio" name="shapeType" value="circle" checked>
+                            <span class="option-content">
+                                <span class="option-icon">
+                                    <i data-lucide="circle"></i>
+                                </span>
+                                <span class="option-label">Círculo</span>
+                            </span>
+                        </label>
+                        <label class="shape-option" data-shape="polygon">
+                            <input type="radio" name="shapeType" value="polygon">
+                            <span class="option-content">
+                                <span class="option-icon">
+                                    <i data-lucide="triangle"></i>
+                                </span>
+                                <span class="option-label">Polígono</span>
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <!-- Selector de Lados (solo visible para polígono) -->
+                    <div class="sides-selector" id="sidesSelector">
+                        <label class="sides-label">Lados</label>
+                        <div class="sides-control">
+                            <button class="sides-btn minus" id="sidesMinus" aria-label="Reducir lados">
+                                <i data-lucide="minus"></i>
+                            </button>
+                            <input type="number" class="sides-input" id="sidesInput" 
+                                   value="3" min="3" max="20" readonly>
+                            <button class="sides-btn plus" id="sidesPlus" aria-label="Aumentar lados">
+                                <i data-lucide="plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview de la Forma -->
+                <div class="config-group shape-preview">
+                    <h3 class="group-title">
+                        <i data-lucide="eye"></i>
+                        <span>Vista Previa</span>
+                    </h3>
+                    <div class="preview-container">
+                        <canvas id="configCanvas"></canvas>
+                        <div class="preview-overlay">
+                            <span class="drag-hint">
+                                <i data-lucide="move"></i>
+                                Arrastra el punto
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Información del Punto -->
+                <div class="config-group point-info">
+                    <h3 class="group-title">
+                        <i data-lucide="crosshair"></i>
+                        <span>Punto de Dibujo</span>
+                    </h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">X</span>
+                            <span class="info-value" id="pointX">0.000</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Y</span>
+                            <span class="info-value" id="pointY">1.000</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Radio</span>
+                            <span class="info-value" id="pointRadius">1.000</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Distancia</span>
+                            <span class="info-value" id="pointDistance">1.000</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controles -->
+                <div class="config-group controls-section">
+                    <h3 class="group-title">
+                        <i data-lucide="sliders-horizontal"></i>
+                        <span>Controles</span>
+                    </h3>
+                    
+                    <!-- Slider de Ciclos -->
+                    <div class="control-item">
+                        <div class="control-header">
+                            <label class="control-label">Ciclos</label>
+                            <span class="control-value" id="cyclesValue">1</span>
+                        </div>
+                        <input type="range" class="cycles-slider" id="cyclesSlider" 
+                               min="0.5" max="5" step="0.5" value="1">
+                        <div class="slider-marks">
+                            <span>0.5</span>
+                            <span>2.5</span>
+                            <span>5</span>
+                        </div>
+                    </div>
+
+                    <!-- Opciones de Exportación -->
+                    <div class="export-options">
+                        <div class="export-row">
+                            <label class="export-label">Formato</label>
+                            <div class="export-select-wrapper">
+                                <select id="exportFormat" class="export-select">
+                                    <option value="csv">CSV</option>
+                                    <option value="svg">SVG</option>
+                                    <option value="json">JSON</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="select-icon"></i>
+                            </div>
+                        </div>
+                        <div class="export-row">
+                            <label class="export-label">Precisión</label>
+                            <div class="precision-control">
+                                <button class="precision-btn minus" id="precisionMinus" aria-label="Reducir precisión">
+                                    <i data-lucide="minus"></i>
+                                </button>
+                                <span class="precision-value" id="precisionValue">6</span>
+                                <button class="precision-btn plus" id="precisionPlus" aria-label="Aumentar precisión">
+                                    <i data-lucide="plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="action-buttons">
+                        <button class="btn btn-secondary" id="resetBtn">
+                            <i data-lucide="rotate-ccw"></i>
+                            <span>Reiniciar</span>
+                        </button>
+                        <button class="btn btn-primary" id="exportBtn">
+                            <i data-lucide="download"></i>
+                            <span>Exportar</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ========================================== -->
+        <!-- PANEL GRÁFICO (Inferior - Maximizado) -->
+        <!-- ========================================== -->
+        <section class="graph-panel" id="graphPanel">
+            <div class="graph-header">
+                <h3 class="graph-title">
+                    <i data-lucide="line-chart"></i>
+                    <span>Gráfica del Ciclógono</span>
+                </h3>
+                <div class="graph-controls">
+                    <button class="graph-btn" id="zoomInBtn" title="Acercar">
+                        <i data-lucide="zoom-in"></i>
+                    </button>
+                    <button class="graph-btn" id="zoomOutBtn" title="Alejar">
+                        <i data-lucide="zoom-out"></i>
+                    </button>
+                    <button class="graph-btn" id="fitViewBtn" title="Ajustar vista">
+                        <i data-lucide="maximize-2"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="graph-container">
+                <canvas id="graphCanvas"></canvas>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================== -->
+    <!-- FOOTER / STATUS BAR -->
+    <!-- ========================================== -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <div class="status-section">
+                <div class="status-indicator ready" id="statusIndicator"></div>
+                <span class="status-text" id="statusText">Listo</span>
+            </div>
+            <div class="tips-section">
+                <span class="tip-item">
+                    <kbd>SHIFT</kbd> + Arrastra: Snap a bordes
+                </span>
+                <span class="tip-separator">|</span>
+                <span class="tip-item">
+                    <i data-lucide="mouse-pointer"></i>
+                    Arrastra el punto para mover
+                </span>
+            </div>
+            <div class="version-section">
+                <span class="version-text">v1.0.0</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- THREE.JS y Scripts de la Aplicación -->
+    <!-- ========================================== -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    
+    <!-- Main Application Script -->
+    <script type="module" src="js/app.js"></script>
+    
+    <!-- Initialize Lucide Icons -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
