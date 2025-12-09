@@ -112,7 +112,7 @@ export class CyclogonCalculator {
             const x = centerX + d * Math.cos(pointAngle);
             const y = centerY + d * Math.sin(pointAngle);
             
-            cyclogon.addPoint({ x, y, theta });
+            cyclogon.addPoint({ x, y, theta, center: { x: centerX, y: centerY } });
         }
         
         // Calcular metadatos
@@ -229,7 +229,8 @@ export class CyclogonCalculator {
                     y,
                     sideIndex,
                     rotation: currentTotalRotation,
-                    pivot: { ...pivot }
+                    pivot: { ...pivot },
+                    center: { x: centerX, y: centerY }
                 });
             }
             
@@ -244,7 +245,8 @@ export class CyclogonCalculator {
             sides: n,
             totalDistance: totalSides * sideLength,
             sideLength: sideLength,
-            exteriorAngle: exteriorAngle
+            exteriorAngle: exteriorAngle,
+            adjustmentRotation: adjustmentRotation
         });
         
         return cyclogon;

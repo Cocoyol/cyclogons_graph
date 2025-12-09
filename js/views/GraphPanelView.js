@@ -14,6 +14,8 @@
 
 import * as THREE from 'three';
 import { CONFIG, MATH } from '../config/constants.js';
+import Polygon from '../models/Polygon.js';
+import Circle from '../models/Circle.js';
 
 /**
  * Estados posibles del panel gráfico
@@ -50,8 +52,9 @@ export class GraphPanelView {
         this._cyclogonLine = null;
         this._floorLine = null;
         this._gridHelper = null;
-        this._animatedPolygon = null;  // Polígono animado (opcional)
-        this._animatedPoint = null;     // Punto animado (opcional)
+        this._animatedShapeMesh = null;  // Polígono/Círculo animado
+        this._animatedPointMesh = null;  // Punto de dibujo animado
+        this._animatedRadiusLine = null; // Línea del radio animada
 
         // Estado de la vista
         this._state = GraphPanelState.IDLE;
@@ -534,7 +537,49 @@ export class GraphPanelView {
     // ==========================================
 
     /**
-     * Inicia la animación de dibujo de la curva
+     * Prepara la vista para la animación
+     * @deprecated Usar prepareAnimationElements() para solo preparar sin iniciar
+     */
+    prepareAnimation() {
+        this._createAnimatedShape();
+        this._animation.enabled = true;
+        this.setAnimationProgress(0);
+    }
+
+    /**
+     * Prepara los elementos visuales de animación sin iniciarla
+     * La curva se muestra completa y los controles quedan listos
+     */
+    prepareAnimationElements() {
+        this._createAnimatedShape();
+        // Mostrar curva completa por defecto
+        this._animation.enabled = false;
+        this._animation.progress = 1;
+        this._updateCurveGeometry(); // Mostrar curva completa
+        // Ocultar elementos de animación hasta que el usuario inicie
+        if (this._animatedShapeMesh) this._animatedShapeMesh.visible = false;
+        if (this._animatedPointMesh) this._animatedPointMesh.visible = false;
+        if (this._animatedRadiusLine) this._animatedRadiusLine.visible = false;
+    }
+
+    /**
+     * Establece el progreso de la animación
+     * @param {number} progress - 0 a 1
+     */
+    setAnimationProgress(progress) {
+        this._animation.progress = Math.max(0, Math.min(1, progress));
+        
+        // Mostrar elementos de animación cuando se controla el progreso
+        if (this._animatedShapeMesh) this._animatedShapeMesh.visible = true;
+        if (this._animatedPointMesh) this._animatedPointMesh.visible = true;
+        if (this._animatedRadiusLine) this._animatedRadiusLine.visible = true;
+        
+        this._updateAnimatedCurve();
+        this._needsUpdate = true;
+    }
+
+    /**
+     * Inicia la animación de dibujo de la curva (Legacy/Internal)
      */
     startDrawingAnimation() {
         this._animation.enabled = true;
@@ -596,14 +641,16 @@ export class GraphPanelView {
     }
 
     /**
-     * Actualiza la visualización de la curva animada
+     * Actualiza el estado de la animación (curva y forma)
      * @private
      */
     _updateAnimatedCurve() {
         if (this._curvePoints.length === 0) return;
 
-        const pointCount = Math.floor(this._curvePoints.length * this._animation.progress);
-        const partialPoints = this._curvePoints.slice(0, Math.max(2, pointCount));
+        // 1. Actualizar Curva Progresiva
+        const totalPoints = this._curvePoints.length;
+        const currentPointIndex = Math.floor((totalPoints - 1) * this._animation.progress);
+        const partialPoints = this._curvePoints.slice(0, currentPointIndex + 1);
 
         this._cyclogonLine.geometry.dispose();
         this._cyclogonLine.geometry = new THREE.BufferGeometry().setFromPoints(partialPoints);
@@ -612,6 +659,134 @@ export class GraphPanelView {
             this._cyclogonGlow.geometry.dispose();
             this._cyclogonGlow.geometry = new THREE.BufferGeometry().setFromPoints(partialPoints);
         }
+
+        // 2. Actualizar Forma Rodante
+        if (!this._animatedShapeMesh) {
+            this._createAnimatedShape();
+        }
+
+        const currentPointData = this._currentCyclogon.getPoint(currentPointIndex);
+        if (currentPointData && currentPointData.center) {
+            // Posición del centro
+            this._animatedShapeMesh.position.set(currentPointData.center.x, currentPointData.center.y, 0);
+            
+            // Rotación
+            // Para Círculo: theta
+            // Para Polígono: rotation
+            let rotation = 0;
+            if (this._currentCyclogon.sourceShape instanceof Circle) {
+                // En cicloide, theta es positivo, pero la rotación visual es negativa (horaria) si avanza a la derecha
+                // CyclogonCalculator: const pointAngle = alpha - theta;
+                // La rotación del cuerpo es -theta
+                rotation = -currentPointData.theta;
+            } else {
+                // En polígono, rotation es acumulada
+                // CyclogonCalculator: rotation: currentTotalRotation
+                // La rotación es negativa (horaria)
+                // Además, debemos aplicar la rotación inicial de ajuste (adjustmentRotation)
+                const adjustmentRotation = this._currentCyclogon.getMetadataValue('adjustmentRotation') || 0;
+                rotation = -currentPointData.rotation + adjustmentRotation;
+            }
+            
+            this._animatedShapeMesh.rotation.z = rotation;
+
+            // Actualizar Punto de Dibujo (Mesh)
+            this._animatedPointMesh.position.set(currentPointData.x, currentPointData.y, 0.02);
+
+            // Actualizar Línea de Radio (Centro a Punto)
+            const radiusPoints = [
+                new THREE.Vector3(currentPointData.center.x, currentPointData.center.y, 0),
+                new THREE.Vector3(currentPointData.x, currentPointData.y, 0)
+            ];
+            this._animatedRadiusLine.geometry.dispose();
+            this._animatedRadiusLine.geometry = new THREE.BufferGeometry().setFromPoints(radiusPoints);
+        }
+    }
+
+    /**
+     * Crea la geometría para la forma animada
+     * @private
+     */
+    _createAnimatedShape() {
+        // Limpiar existentes
+        if (this._animatedShapeMesh) {
+            this._scene.remove(this._animatedShapeMesh);
+            // Dispose geometry/material safely
+            if (this._animatedShapeMesh.geometry) this._animatedShapeMesh.geometry.dispose();
+            if (this._animatedShapeMesh.material) this._animatedShapeMesh.material.dispose();
+            this._animatedShapeMesh = null;
+        }
+        if (this._animatedPointMesh) {
+            this._scene.remove(this._animatedPointMesh);
+            if (this._animatedPointMesh.geometry) this._animatedPointMesh.geometry.dispose();
+            if (this._animatedPointMesh.material) this._animatedPointMesh.material.dispose();
+            this._animatedPointMesh = null;
+        }
+        if (this._animatedRadiusLine) {
+            this._scene.remove(this._animatedRadiusLine);
+            if (this._animatedRadiusLine.geometry) this._animatedRadiusLine.geometry.dispose();
+            if (this._animatedRadiusLine.material) this._animatedRadiusLine.material.dispose();
+            this._animatedRadiusLine = null;
+        }
+
+        if (!this._currentCyclogon) return;
+
+        const shape = this._currentCyclogon.sourceShape;
+        const color = 0xffffff; // Blanco para la forma
+
+        // Crear Mesh de la forma
+        if (shape instanceof Circle) {
+            const geometry = new THREE.RingGeometry(shape.radius - 0.02, shape.radius, 64);
+            const material = new THREE.MeshBasicMaterial({ color: color, side: THREE.DoubleSide });
+            this._animatedShapeMesh = new THREE.Mesh(geometry, material);
+            
+            // Añadir una línea para ver la rotación
+            const lineGeo = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(shape.radius, 0, 0)
+            ]);
+            const lineMat = new THREE.LineBasicMaterial({ color: color });
+            const line = new THREE.Line(lineGeo, lineMat);
+            this._animatedShapeMesh.add(line);
+
+        } else if (shape instanceof Polygon) {
+            const points = [];
+            // Usar los vértices del modelo original para mantener la orientación correcta
+            const vertices = shape.vertices;
+            
+            vertices.forEach(v => {
+                points.push(new THREE.Vector3(v.x, v.y, 0));
+            });
+            // Cerrar el polígono
+            if (vertices.length > 0) {
+                points.push(new THREE.Vector3(vertices[0].x, vertices[0].y, 0));
+            }
+            
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: color });
+            this._animatedShapeMesh = new THREE.Line(geometry, material);
+        }
+
+        if (this._animatedShapeMesh) {
+            this._scene.add(this._animatedShapeMesh);
+        }
+
+        // Crear Punto de Dibujo
+        const pointGeometry = new THREE.CircleGeometry(0.08, 16);
+        const pointMaterial = new THREE.MeshBasicMaterial({ color: CONFIG.COLORS.ACCENT_SECONDARY });
+        this._animatedPointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
+        this._animatedPointMesh.position.z = 0.02;
+        this._scene.add(this._animatedPointMesh);
+
+        // Crear Línea de Radio
+        const radiusGeo = new THREE.BufferGeometry();
+        const radiusMat = new THREE.LineBasicMaterial({ 
+            color: CONFIG.COLORS.TEXT_MUTED, 
+            transparent: true, 
+            opacity: 0.5
+        });
+        this._animatedRadiusLine = new THREE.Line(radiusGeo, radiusMat);
+        this._scene.add(this._animatedRadiusLine);
     }
 
     // ==========================================

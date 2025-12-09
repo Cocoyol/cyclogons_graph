@@ -421,3 +421,258 @@
         border-color: var(--color-accent-primary);
     }
 }
+
+/* ==========================================
+   CONTROLES DE ANIMACIÓN (REPRODUCTOR)
+   ========================================== */
+.animation-controls-wrapper {
+    padding: 12px 16px;
+    background: rgba(0, 0, 0, 0.4);
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.anim-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+/* Botones del reproductor */
+.anim-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.anim-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg-tertiary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+.anim-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(76, 201, 240, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.4s ease, height 0.4s ease;
+}
+
+.anim-btn:hover {
+    background: rgba(76, 201, 240, 0.15);
+    border-color: var(--color-accent-primary);
+    color: var(--color-accent-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 201, 240, 0.2);
+}
+
+.anim-btn:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.anim-btn:active::before {
+    width: 100px;
+    height: 100px;
+}
+
+.anim-btn svg {
+    width: 18px;
+    height: 18px;
+    position: relative;
+    z-index: 1;
+    transition: transform var(--transition-fast);
+}
+
+.anim-btn:hover svg {
+    transform: scale(1.1);
+}
+
+/* Botón de Play/Pause - más destacado */
+.anim-btn.play-btn {
+    width: 44px;
+    height: 44px;
+    background: var(--gradient-primary);
+    border: none;
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-md), 0 0 15px rgba(76, 201, 240, 0.3);
+}
+
+.anim-btn.play-btn::before {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.anim-btn.play-btn:hover {
+    background: var(--gradient-primary);
+    color: var(--color-text-primary);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: var(--shadow-lg), 0 0 25px rgba(76, 201, 240, 0.5);
+}
+
+.anim-btn.play-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Slider de progreso */
+.anim-progress-container {
+    width: 100%;
+    padding: 0 4px;
+}
+
+.anim-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-xl);
+    outline: none;
+    cursor: pointer;
+    position: relative;
+}
+
+.anim-slider::-webkit-slider-runnable-track {
+    height: 6px;
+    background: linear-gradient(
+        to right,
+        var(--color-accent-primary) 0%,
+        var(--color-accent-secondary) 100%
+    );
+    background-size: var(--progress, 0%) 100%;
+    background-repeat: no-repeat;
+    border-radius: var(--radius-xl);
+}
+
+.anim-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--color-text-primary);
+    border: 3px solid var(--color-accent-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -5px;
+    box-shadow: 0 0 10px rgba(76, 201, 240, 0.5),
+                var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.anim-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px rgba(76, 201, 240, 0.7),
+                var(--shadow-md);
+}
+
+.anim-slider::-moz-range-track {
+    height: 6px;
+    background: var(--color-bg-tertiary);
+    border-radius: var(--radius-xl);
+}
+
+.anim-slider::-moz-range-progress {
+    height: 6px;
+    background: linear-gradient(
+        to right,
+        var(--color-accent-primary) 0%,
+        var(--color-accent-secondary) 100%
+    );
+    border-radius: var(--radius-xl);
+}
+
+.anim-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--color-text-primary);
+    border: 3px solid var(--color-accent-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(76, 201, 240, 0.5),
+                var(--shadow-sm);
+    transition: all var(--transition-fast);
+}
+
+.anim-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Animación de glow cuando está reproduciendo */
+.anim-controls.playing .anim-btn.play-btn {
+    animation: playingGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes playingGlow {
+    0%, 100% {
+        box-shadow: var(--shadow-md), 0 0 15px rgba(76, 201, 240, 0.3);
+    }
+    50% {
+        box-shadow: var(--shadow-lg), 0 0 25px rgba(76, 201, 240, 0.6);
+    }
+}
+
+/* Responsive para controles de animación */
+@media (max-width: 768px) {
+    .animation-controls-wrapper {
+        padding: 10px 12px;
+    }
+    
+    .anim-controls {
+        gap: 10px;
+    }
+    
+    .anim-btn {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .anim-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .anim-btn.play-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .anim-btn.play-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .anim-buttons {
+        gap: 6px;
+    }
+    
+    .anim-btn {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .anim-btn.play-btn {
+        width: 36px;
+        height: 36px;
+    }
+}

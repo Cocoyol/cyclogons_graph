@@ -23,6 +23,8 @@ import Cyclogon from './models/Cyclogon.js';
 import InputController, { InputEventType, InputState } from './controllers/InputController.js';
 import CyclogonCalculator, { CurveType } from './services/CyclogonCalculator.js';
 import ExportService, { ExportFormat } from './services/ExportService.js';
+import { AnimationController } from './controllers/AnimationController.js';
+import { AnimationControlsView } from './views/AnimationControlsView.js';
 
 /**
  * ============================================
@@ -48,6 +50,10 @@ class CyclogonApp {
         
         // FASE 6: Servicio de exportación
         this.exportService = null;
+        
+        // FASE 7: Módulo de Animación
+        this.animationController = null;
+        this.animationControlsView = null;
         
         // Estado de la aplicación
         this.state = {
@@ -94,6 +100,9 @@ class CyclogonApp {
             
             // FASE 6: Inicializar servicio de exportación
             this.initExportService();
+            
+            // FASE 7: Inicializar módulos de animación
+            this.initAnimationModules();
             
             // Configurar eventos (UI)
             this.setupEventListeners();
@@ -236,6 +245,62 @@ class CyclogonApp {
         });
         console.log('ExportService inicializado');
     }
+
+    /**
+     * Inicializa los módulos de animación (FASE 7)
+     */
+    initAnimationModules() {
+        // 1. Inicializar Controlador
+        this.animationController = new AnimationController({
+            onUpdate: (progress) => {
+                // Actualizar vista gráfica
+                if (this.graphPanelView) {
+                    this.graphPanelView.setAnimationProgress(progress);
+                }
+                // Actualizar slider de controles
+                if (this.animationControlsView) {
+                    this.animationControlsView.setProgress(progress);
+                }
+            },
+            onComplete: () => {
+                if (this.animationControlsView) {
+                    this.animationControlsView.setPlaying(false);
+                }
+            }
+        });
+
+        // 2. Inicializar Vista de Controles
+        const controlsContainer = document.getElementById('animationControls');
+        if (controlsContainer) {
+            this.animationControlsView = new AnimationControlsView(controlsContainer, {
+                onPlay: () => {
+                    this.animationController.play();
+                    this.animationControlsView.setPlaying(true);
+                },
+                onPause: () => {
+                    this.animationController.pause();
+                    this.animationControlsView.setPlaying(false);
+                },
+                onStop: () => {
+                    this.animationController.stop();
+                    this.animationControlsView.setPlaying(false);
+                },
+                onStepForward: () => {
+                    this.animationController.step(0.01); // 1% step
+                    this.animationControlsView.setPlaying(false);
+                },
+                onStepBackward: () => {
+                    this.animationController.step(-0.01);
+                    this.animationControlsView.setPlaying(false);
+                },
+                onSeek: (value) => {
+                    this.animationController.setProgress(value);
+                }
+            });
+        }
+
+        console.log('Módulos de animación inicializados');
+    }
     
     /**
      * Configura los eventos del InputController (FASE 3)
@@ -375,6 +440,21 @@ class CyclogonApp {
             
             // FASE 5: Pasar el ciclógono a la vista del panel gráfico
             this.graphPanelView.setCyclogon(this.currentCyclogon);
+            
+            // FASE 7: Preparar animación (sin iniciarla automáticamente)
+            // Solo preparamos los elementos visuales y mostramos la curva completa
+            if (this.graphPanelView.prepareAnimationElements) {
+                this.graphPanelView.prepareAnimationElements();
+            }
+            
+            // Resetear controles de animación sin afectar la curva visible
+            if (this.animationController) {
+                this.animationController.reset();
+            }
+            if (this.animationControlsView) {
+                this.animationControlsView.setPlaying(false);
+                this.animationControlsView.setProgress(0);
+            }
             
             // Log de información de la curva (solo en debug)
             if (CONFIG.APP.DEBUG) {
