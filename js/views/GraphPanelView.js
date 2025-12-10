@@ -99,6 +99,11 @@ export class GraphPanelView {
         this._onMouseMove = this._onMouseMove.bind(this);
         this._onMouseUp = this._onMouseUp.bind(this);
         this._onWheel = this._onWheel.bind(this);
+        this._onResize = this._onResize.bind(this);
+
+        // ResizeObserver para detectar cambios de tamaño del contenedor
+        this._resizeObserver = null;
+        this._resizeTimeout = null;
 
         // Inicializar
         this._init();
@@ -164,6 +169,57 @@ export class GraphPanelView {
         this._initGrid();
         this._initCyclogonLine();
         this._initEventListeners();
+        this._initResizeObserver();
+    }
+
+    /**
+     * Inicializa el ResizeObserver para detectar cambios de tamaño del contenedor
+     * @private
+     */
+    _initResizeObserver() {
+        if (typeof ResizeObserver !== 'undefined') {
+            this._resizeObserver = new ResizeObserver((entries) => {
+                // Usar debounce para evitar múltiples llamadas
+                if (this._resizeTimeout) {
+                    clearTimeout(this._resizeTimeout);
+                }
+                this._resizeTimeout = setTimeout(() => {
+                    this._onResize();
+                }, 50);
+            });
+            this._resizeObserver.observe(this._container);
+        }
+    }
+
+    /**
+     * Callback interno para resize desde ResizeObserver
+     * @private
+     */
+    _onResize() {
+        const width = this._container.clientWidth;
+        const height = this._container.clientHeight;
+
+        // Evitar procesamiento si el tamaño es inválido
+        if (width === 0 || height === 0) return;
+
+        this._renderer.setSize(width, height);
+
+        // Recalcular aspect ratio y actualizar cámara
+        const aspect = width / height;
+        const currentHeight = this._camera.top - this._camera.bottom;
+        const newWidth = currentHeight * aspect;
+        const centerX = (this._camera.right + this._camera.left) / 2;
+
+        this._camera.left = centerX - newWidth / 2;
+        this._camera.right = centerX + newWidth / 2;
+        this._camera.updateProjectionMatrix();
+
+        // Si hay una curva, reajustar la vista
+        if (this._curvePoints.length > 0) {
+            this.fitView();
+        }
+
+        this._needsUpdate = true;
     }
 
     /**
@@ -997,6 +1053,9 @@ export class GraphPanelView {
         const width = this._container.clientWidth;
         const height = this._container.clientHeight;
 
+        // Evitar procesamiento si el tamaño es inválido
+        if (width === 0 || height === 0) return;
+
         this._renderer.setSize(width, height);
 
         // Mantener la proporción de la vista actual
@@ -1009,6 +1068,11 @@ export class GraphPanelView {
         this._camera.right = centerX + newWidth / 2;
         this._camera.updateProjectionMatrix();
 
+        // Si hay una curva, reajustar la vista para mantener proporciones
+        if (this._curvePoints.length > 0) {
+            this.fitView();
+        }
+
         this._needsUpdate = true;
     }
 
@@ -1020,6 +1084,15 @@ export class GraphPanelView {
      * Libera todos los recursos
      */
     dispose() {
+        // Eliminar ResizeObserver
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
+        }
+        if (this._resizeTimeout) {
+            clearTimeout(this._resizeTimeout);
+        }
+
         // Eliminar event listeners
         this._canvas.removeEventListener('mousedown', this._onMouseDown);
         this._canvas.removeEventListener('mousemove', this._onMouseMove);

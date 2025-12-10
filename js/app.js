@@ -110,6 +110,16 @@ class CyclogonApp {
             // Calcular ciclógono inicial
             this.updateCyclogon();
             
+            // Forzar resize inicial después de que el layout esté estabilizado
+            // Esto es necesario especialmente en pantallas verticales/móviles
+            requestAnimationFrame(() => {
+                this.onWindowResize();
+                // Segunda llamada con delay para asegurar que CSS esté completamente aplicado
+                setTimeout(() => {
+                    this.onWindowResize();
+                }, 100);
+            });
+            
             // Iniciar loop de renderizado
             this.animate();
             

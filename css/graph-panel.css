@@ -354,13 +354,48 @@
 /* ==========================================
    RESPONSIVE
    ========================================== */
+
+/* Large screens */
+@media (max-width: 1200px) {
+    .graph-panel {
+        min-height: 300px;
+    }
+}
+
+/* Medium screens */
+@media (max-width: 900px) {
+    .graph-panel {
+        min-height: 280px;
+    }
+    
+    .graph-header {
+        padding: 10px 14px;
+    }
+    
+    .graph-title {
+        font-size: 0.8rem;
+    }
+}
+
+/* Tablet screens */
 @media (max-width: 768px) {
+    .graph-panel {
+        min-height: 260px;
+        flex: 1 1 auto;
+    }
+    
     .graph-header {
         padding: 10px 12px;
     }
     
     .graph-title {
         font-size: 0.8rem;
+        gap: 8px;
+    }
+    
+    .graph-title svg {
+        width: 16px;
+        height: 16px;
     }
     
     .graph-btn {
@@ -382,14 +417,65 @@
     .graph-minimap {
         display: none;
     }
+    
+    .graph-container::before,
+    .graph-container::after {
+        height: 40px;
+    }
 }
 
+/* Small screens */
+@media (max-width: 580px) {
+    .graph-panel {
+        min-height: 240px;
+    }
+    
+    .graph-header {
+        padding: 8px 10px;
+    }
+    
+    .graph-title {
+        font-size: 0.75rem;
+    }
+}
+
+/* Mobile screens */
 @media (max-width: 480px) {
+    .graph-panel {
+        min-height: 220px;
+    }
+    
     .graph-controls {
         gap: 4px;
     }
     
+    .graph-btn {
+        width: 26px;
+        height: 26px;
+    }
+    
+    .graph-btn svg {
+        width: 12px;
+        height: 12px;
+    }
+    
     .graph-legend {
+        display: none;
+    }
+    
+    .graph-container::before,
+    .graph-container::after {
+        height: 30px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+    .graph-panel {
+        min-height: 200px;
+    }
+    
+    .graph-title span {
         display: none;
     }
 }
@@ -631,6 +717,16 @@
 }
 
 /* Responsive para controles de animación */
+@media (max-width: 900px) {
+    .animation-controls-wrapper {
+        padding: 10px 14px;
+    }
+    
+    .anim-controls {
+        max-width: 450px;
+    }
+}
+
 @media (max-width: 768px) {
     .animation-controls-wrapper {
         padding: 10px 12px;
@@ -638,6 +734,7 @@
     
     .anim-controls {
         gap: 10px;
+        max-width: 400px;
     }
     
     .anim-btn {
@@ -659,6 +756,28 @@
         width: 18px;
         height: 18px;
     }
+    
+    .anim-slider::-webkit-slider-thumb {
+        width: 14px;
+        height: 14px;
+        margin-top: -4px;
+    }
+    
+    .anim-slider::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+@media (max-width: 580px) {
+    .animation-controls-wrapper {
+        padding: 8px 10px;
+    }
+    
+    .anim-controls {
+        gap: 8px;
+        max-width: 100%;
+    }
 }
 
 @media (max-width: 480px) {
@@ -671,8 +790,44 @@
         height: 30px;
     }
     
+    .anim-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+    
     .anim-btn.play-btn {
         width: 36px;
         height: 36px;
+    }
+    
+    .anim-btn.play-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .anim-slider {
+        height: 5px;
+    }
+    
+    .anim-slider::-webkit-slider-thumb {
+        width: 12px;
+        height: 12px;
+        margin-top: -3.5px;
+    }
+}
+
+@media (max-width: 360px) {
+    .animation-controls-wrapper {
+        padding: 6px 8px;
+    }
+    
+    .anim-btn {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .anim-btn.play-btn {
+        width: 32px;
+        height: 32px;
     }
 }

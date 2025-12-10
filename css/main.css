@@ -654,7 +654,28 @@ kbd {
 
 /* ==========================================
    RESPONSIVE
-   ========================================== */ */
+   ========================================== */
+
+/* Extra Large screens */
+@media (max-width: 1400px) {
+    :root {
+        --config-panel-height: 240px;
+    }
+}
+
+/* Large screens */
+@media (max-width: 1200px) {
+    :root {
+        --config-panel-height: auto;
+    }
+    
+    .main-container {
+        padding: 12px;
+        gap: 12px;
+        overflow-y: auto;
+    }
+}
+
 @media (max-width: 1024px) {
     .app-title {
         font-size: 1.25rem;
@@ -672,15 +693,70 @@ kbd {
 @media (max-width: 768px) {
     :root {
         --header-height: 60px;
-        --config-panel-height: 280px;
+        --config-panel-height: auto;
+    }
+    
+    body {
+        overflow-y: auto;
+        height: auto;
+        min-height: 100vh;
     }
     
     .main-container {
         padding: 8px;
         gap: 8px;
+        height: auto;
+        max-height: none;
+        min-height: calc(100vh - var(--header-height) - var(--footer-height));
+        overflow-y: auto;
     }
     
     .header-badge {
+        display: none;
+    }
+    
+    .app-header {
+        padding: 0 16px;
+    }
+    
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --header-height: 56px;
+        --footer-height: 36px;
+    }
+    
+    .app-title {
+        font-size: 1.1rem;
+    }
+    
+    .app-header {
+        padding: 0 12px;
+    }
+    
+    .logo-section {
+        gap: 10px;
+    }
+    
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .app-footer {
+        padding: 0 12px;
+    }
+    
+    .footer-content {
+        font-size: 0.65rem;
+    }
+    
+    .version-section {
         display: none;
     }
 }

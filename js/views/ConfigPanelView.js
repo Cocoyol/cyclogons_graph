@@ -63,6 +63,11 @@ export class ConfigPanelView {
         this._lastTime = performance.now();
         this._isSnapModeActive = false;
 
+        // ResizeObserver para detectar cambios de tamaño del contenedor
+        this._resizeObserver = null;
+        this._resizeTimeout = null;
+        this._onResize = this._onResize.bind(this);
+
         // Inicializar
         this._init();
     }
@@ -118,6 +123,50 @@ export class ConfigPanelView {
         this._initDrawPoint();
         this._initSnapIndicator();
         this._initTrailGroup();
+        this._initResizeObserver();
+    }
+
+    /**
+     * Inicializa el ResizeObserver para detectar cambios de tamaño del contenedor
+     * @private
+     */
+    _initResizeObserver() {
+        if (typeof ResizeObserver !== 'undefined') {
+            this._resizeObserver = new ResizeObserver((entries) => {
+                // Usar debounce para evitar múltiples llamadas
+                if (this._resizeTimeout) {
+                    clearTimeout(this._resizeTimeout);
+                }
+                this._resizeTimeout = setTimeout(() => {
+                    this._onResize();
+                }, 50);
+            });
+            this._resizeObserver.observe(this._container);
+        }
+    }
+
+    /**
+     * Callback interno para resize desde ResizeObserver
+     * @private
+     */
+    _onResize() {
+        const width = this._container.clientWidth;
+        const height = this._container.clientHeight;
+
+        // Evitar procesamiento si el tamaño es inválido
+        if (width === 0 || height === 0) return;
+
+        const aspect = width / height;
+        const frustumSize = CONFIG.CAMERA.CONFIG_PANEL.FRUSTUM_SIZE;
+
+        this._camera.left = -frustumSize * aspect / 2;
+        this._camera.right = frustumSize * aspect / 2;
+        this._camera.top = frustumSize / 2;
+        this._camera.bottom = -frustumSize / 2;
+        this._camera.updateProjectionMatrix();
+
+        this._renderer.setSize(width, height);
+        this._needsUpdate = true;
     }
 
     /**
@@ -902,6 +951,10 @@ export class ConfigPanelView {
     resize() {
         const width = this._container.clientWidth;
         const height = this._container.clientHeight;
+        
+        // Evitar procesamiento si el tamaño es inválido
+        if (width === 0 || height === 0) return;
+        
         const aspect = width / height;
         const frustumSize = CONFIG.CAMERA.CONFIG_PANEL.FRUSTUM_SIZE;
 
@@ -923,6 +976,15 @@ export class ConfigPanelView {
      * Libera todos los recursos
      */
     dispose() {
+        // Eliminar ResizeObserver
+        if (this._resizeObserver) {
+            this._resizeObserver.disconnect();
+            this._resizeObserver = null;
+        }
+        if (this._resizeTimeout) {
+            clearTimeout(this._resizeTimeout);
+        }
+
         this._clearShapeVisual();
         this._clearDrawPointVisual();
 

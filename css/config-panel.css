@@ -538,50 +538,266 @@
 /* ==========================================
    RESPONSIVE
    ========================================== */
-@media (max-width: 1200px) {
+
+/* Extra Large screens */
+@media (max-width: 1400px) {
     .config-content {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: auto auto;
+        grid-template-columns: minmax(160px, 1fr) minmax(180px, 220px) minmax(140px, 1fr) minmax(180px, 1.2fr);
+        gap: 10px;
+        padding: 10px;
     }
     
-    .shape-preview {
-        grid-row: span 2;
+    .config-group {
+        padding: 8px;
+        gap: 6px;
+    }
+    
+    .group-title {
+        font-size: 0.7rem;
     }
 }
 
-@media (max-width: 768px) {
+/* Large screens - 2 column layout */
+@media (max-width: 1200px) {
     .config-panel {
         height: auto;
-        min-height: var(--config-panel-height);
+        min-height: auto;
+        max-height: none;
     }
     
     .config-content {
         grid-template-columns: 1fr 1fr;
         grid-template-rows: auto auto;
+        gap: 12px;
+        padding: 12px;
+    }
+    
+    .shape-selector {
+        order: 1;
     }
     
     .shape-preview {
+        order: 2;
+        min-height: 160px;
+    }
+    
+    .point-info {
+        order: 3;
+    }
+    
+    .controls-section {
+        order: 4;
+    }
+    
+    .preview-container {
+        min-height: 140px;
+    }
+}
+
+/* Medium screens */
+@media (max-width: 900px) {
+    .config-content {
+        gap: 10px;
+        padding: 10px;
+    }
+    
+    .shape-preview {
+        min-height: 140px;
+    }
+    
+    .preview-container {
+        min-height: 120px;
+    }
+    
+    .info-grid {
+        gap: 6px;
+    }
+    
+    .info-item {
+        padding: 6px;
+    }
+    
+    .info-value {
+        font-size: 0.75rem;
+    }
+}
+
+/* Tablet screens */
+@media (max-width: 768px) {
+    .config-panel {
+        height: auto;
+        min-height: auto;
+        max-height: none;
+        flex-shrink: 0;
+    }
+    
+    .config-content {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+        gap: 8px;
+        padding: 8px;
+    }
+    
+    .shape-selector {
+        order: 1;
+    }
+    
+    .point-info {
+        order: 2;
+    }
+    
+    .shape-preview {
+        order: 3;
         grid-column: span 2;
         min-height: 150px;
     }
     
     .controls-section {
+        order: 4;
         grid-column: span 2;
+    }
+    
+    .preview-container {
+        min-height: 130px;
+    }
+    
+    .group-title {
+        font-size: 0.65rem;
+    }
+    
+    .option-content {
+        padding: 8px 6px;
+    }
+    
+    .option-icon {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .option-icon svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .option-label {
+        font-size: 0.65rem;
+    }
+    
+    .export-options {
+        padding: 6px;
+    }
+    
+    .action-buttons .btn {
+        padding: 8px 12px;
+        font-size: 0.75rem;
     }
 }
 
-@media (max-width: 480px) {
+/* Small screens / Mobile */
+@media (max-width: 580px) {
     .config-content {
         grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .shape-selector,
+    .point-info,
+    .shape-preview,
+    .controls-section {
+        order: unset;
+        grid-column: 1;
     }
     
     .shape-preview {
-        grid-column: 1;
+        min-height: 140px;
+    }
+    
+    .preview-container {
         min-height: 120px;
     }
     
-    .controls-section {
-        grid-column: 1;
+    .info-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+    }
+    
+    .info-item {
+        padding: 6px 4px;
+    }
+    
+    .info-label {
+        font-size: 0.55rem;
+    }
+    
+    .info-value {
+        font-size: 0.7rem;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+    .config-content {
+        padding: 6px;
+        gap: 6px;
+    }
+    
+    .config-group {
+        padding: 8px;
+    }
+    
+    .shape-options {
+        gap: 6px;
+    }
+    
+    .shape-preview {
+        min-height: 120px;
+    }
+    
+    .preview-container {
+        min-height: 100px;
+    }
+    
+    .info-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .export-options {
+        padding: 6px;
+    }
+    
+    .export-row {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    
+    .action-buttons {
+        flex-direction: row;
+        gap: 6px;
+    }
+    
+    .action-buttons .btn {
+        padding: 8px 10px;
+        font-size: 0.7rem;
+    }
+    
+    .action-buttons .btn svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 360px) {
+    .group-title span {
+        font-size: 0.6rem;
+    }
+    
+    .shape-preview {
+        min-height: 100px;
+    }
+    
+    .info-grid {
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .action-buttons {
